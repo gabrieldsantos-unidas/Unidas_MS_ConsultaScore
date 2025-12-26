@@ -6,7 +6,8 @@ import { consultarScore, type Ambiente } from './utils/api';
 import type { ConsultaResult } from './types/api';
 
 function App() {
-  const [bearerToken, setBearerToken] = useState('');
+  const [authToken, setAuthToken] = useState('');
+  const [payloadToken, setPayloadToken] = useState('');
   const [cnpjsTexto, setCnpjsTexto] = useState('');
   const [ambiente, setAmbiente] = useState<Ambiente>('HML');
   const [resultados, setResultados] = useState<ConsultaResult[]>([]);
@@ -17,8 +18,13 @@ function App() {
   const handleConsultar = async () => {
     setErro('');
 
-    if (!bearerToken.trim()) {
-      setErro('Bearer Token é obrigatório');
+    if (!authToken.trim()) {
+      setErro('Token de Autenticação é obrigatório');
+      return;
+    }
+
+    if (!payloadToken.trim()) {
+      setErro('Token do Payload é obrigatório');
       return;
     }
 
@@ -42,7 +48,7 @@ function App() {
 
     for (let i = 0; i < cnpjs.length; i++) {
       const cnpjLimpo = limparCNPJ(cnpjs[i]);
-      const resultado = await consultarScore(cnpjLimpo, bearerToken, ambiente);
+      const resultado = await consultarScore(cnpjLimpo, authToken, payloadToken, ambiente);
       resultadosTemp.push(resultado);
       setResultados([...resultadosTemp]);
       setProgresso({ atual: i + 1, total: cnpjs.length });
@@ -60,7 +66,8 @@ function App() {
   };
 
   const handleLimpar = () => {
-    setBearerToken('');
+    setAuthToken('');
+    setPayloadToken('');
     setCnpjsTexto('');
     setAmbiente('HML');
     setResultados([]);
@@ -119,18 +126,35 @@ function App() {
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Bearer Token <span className="text-red-600">*</span>
+                Token de Autenticação (Header) <span className="text-red-600">*</span>
               </label>
               <input
                 type="password"
-                value={bearerToken}
-                onChange={(e) => setBearerToken(e.target.value)}
-                placeholder="Cole aqui o Bearer Token"
+                value={authToken}
+                onChange={(e) => setAuthToken(e.target.value)}
+                placeholder="Token usado no header Authorization"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
                 disabled={processando}
               />
               <p className="mt-1 text-xs text-gray-500">
-                O token não será salvo localmente
+                Token enviado no header Authorization Bearer
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Token do Payload (Body) <span className="text-red-600">*</span>
+              </label>
+              <input
+                type="password"
+                value={payloadToken}
+                onChange={(e) => setPayloadToken(e.target.value)}
+                placeholder="Token usado no corpo da requisição"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                disabled={processando}
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Token enviado no campo bearerToken do payload
               </p>
             </div>
 

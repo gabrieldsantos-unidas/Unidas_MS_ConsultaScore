@@ -4,11 +4,11 @@ const API_URL = 'https://vega.hml.unidas.com.br/contractlivre/v1/ContractsSalesF
 
 export type Ambiente = 'HML' | 'PRD';
 
-function criarPayload(cnpj: string, bearerToken: string): ScoreRequest {
+function criarPayload(cnpj: string, payloadToken: string): ScoreRequest {
   return {
     cnpj,
     score: 'Sim',
-    bearerToken
+    bearerToken: payloadToken
   };
 }
 
@@ -28,7 +28,8 @@ function extrairScore(response: ScoreResponse): string {
 
 export async function consultarScore(
   cnpj: string,
-  bearerToken: string,
+  authToken: string,
+  payloadToken: string,
   ambiente: Ambiente = 'HML'
 ): Promise<ConsultaResult> {
   try {
@@ -36,10 +37,10 @@ export async function consultarScore(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${bearerToken}`,
+        'Authorization': `Bearer ${authToken}`,
         'ambiente': ambiente
       },
-      body: JSON.stringify(criarPayload(cnpj, bearerToken))
+      body: JSON.stringify(criarPayload(cnpj, payloadToken))
     });
 
     if (response.status === 401 || response.status === 403) {
